@@ -1,0 +1,19 @@
+input{
+    width: 100%;
+}
+img{
+    padding: 0;
+    margin: 0;
+}
+
+#title{
+    padding: 010px;
+    color: purple;
+    font-weight: bold;
+}
+
+.alert {
+    color: rgb(14, 12, 14);
+    background-color:  rgba(228, 212, 228, 0.671);
+    border-color: purple;
+}

@@ -1,0 +1,41 @@
+.sidebar {
+    flex: 0.35;
+}
+
+.sidebar_header {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    border-right: 1px solid lightgray;
+}
+
+.sidebar_headerR {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 10 vw;
+}
+
+/*
+.sidebar_search {
+    display: flex;
+    align-items: center;
+    background-color: #f6f6f6;
+    height: 39px;
+    padding: 10px;
+}
+*/
+
+.sidebar_chats {
+    flex: 1;
+    background-color: white;
+    overflow-y: auto;
+    height: 80%;
+}
+
+#userimag{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border-color: black;
+}
