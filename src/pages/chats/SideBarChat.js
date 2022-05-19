@@ -39,8 +39,8 @@ function SideBarChat({usernameinlogin, username, nickname, image, chat, createSc
                 <div className="info">
                     <div className="nickname" id="nickname">{nickname}</div>
                     {(chat.length===0)?"":
-                    <div className="last_message" id="last_message">{(lastMsg.own == "me")?"me":(nickname)}:{infoText(lastMsg.type,lastMsg.message)}
-                        <span className="last_message_timedate">{lastMsg.time + " " + lastMsg.date}</span>
+                    <div className="last_message" id="last_message">{(lastMsg.sent == true)?"me":(nickname)}:{infoText(lastMsg.type,lastMsg.content)}
+                        <span className="last_message_timedate">{lastMsg.created}</span>
                     </div>}
                 </div>
             </div>

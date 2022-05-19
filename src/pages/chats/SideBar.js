@@ -1,15 +1,21 @@
-import React from "react";
 import "./SideBar.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Avatar from "./icons/Avatar";
 import NewChat from "./NewChat";
 import ChatListUpdate from "./ChatListUpdate";
 import Users from "../../Users";
 
-
 function SideBar({user, createScreen}) {
-
-    const chats = user.friends;
+    const [chats, setCaths] = useState([])
+    useEffect(() => {
+        async function fetchData() {
+            const response = await fetch('http://localhost:5034/api/contacts/');
+            const data =  await response.json();
+            setCaths(data);
+        }
+        fetchData();
+      }, []); // Or [] if effect doesn't need props or state
+    console.log(chats);
 
     // load the page with the new chat list after adding a new chat.
     const [chatList, setChatList] = useState(chats);
@@ -35,7 +41,7 @@ function SideBar({user, createScreen}) {
                 </div>
             </div>
             <div className="sidebar_chats">
-                <ChatListUpdate usernameinlogin={user.username} chats={chatList} createScreen={createScreen}/>
+                <ChatListUpdate usernameinlogin={user.id} chats={chatList} createScreen={createScreen}/>
             </div>
 
         </div>

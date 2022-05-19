@@ -24,7 +24,7 @@ const MessageByType = function({ type, message }){
 // one message
 function Message({type,message,own,time}){
     return(
-        <div className={`chat_message ${(own!="me")?"chat_reciever":""}`}>
+        <div className={`chat_message ${(own!=true)?"chat_reciever":""}`}>
             <MessageByType type={type} message={message}/>
             <span className="chat_message_timedate">{time}</span>
         </div>
@@ -35,7 +35,7 @@ function Message({type,message,own,time}){
 function MessagesList ({messages}) {
     // sync the chat list in the sidebar with the user's friends.
     const messageList = messages.map((message, key) => {
-        return <Message type={message.type} message={message.message} own={message.own} time={message.time} key={key} />;
+        return <Message type={message.type} message={message.content} own={message.sent} time={message.created} key={key} />;
     });
     return (
         <div className="messageList">
