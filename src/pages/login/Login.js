@@ -1,7 +1,7 @@
 import './Login.css';
 import { useRef, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import Users from '../../Users.js';
+//import Users from '../../Users.js';
 
 
 // alert if there is wong Details
@@ -19,7 +19,7 @@ function EmptyDetails(){
   );
 }
 
-function Login({users}) {
+function Login() {
   // reference to input of user
   const usernameInput = useRef();
   const passwordInput = useRef();
@@ -29,14 +29,24 @@ function Login({users}) {
   const [error, setError] = useState("");
   const [empty, setEmpty] = useState("");
 
-  const checkLogin = function(){
+  const checkLogin = async function(){
     let userName = usernameInput.current.value;
     let password = passwordInput.current.value;
-  
-    for (var key in Users){
+    const response = await fetch('http://localhost:5034/api/contacts/users');
+    let Users = await response.json();
+    console.log(Users);
+    for (var i in Users){
+      const user = Users[i];
+      console.log(user.id);
       // if the username and the password are correct, move to the chats page. (working!)
-        if (userName === key && password === Users[key].password){
-          navigate("/chats",{state: {username: key, password: Users[key].password, nickname: Users[key].nickname, image: Users[key].image, friends: Users[key].friends}});
+        if (userName === user.id && password === user.password){
+
+          // do POST request to the login controller
+          fetch('http://localhost:5034/api/login/{user.id}',
+                { method: "POST",
+        /*mode: 'no-cors'*/ })
+
+          navigate("/chats",{state: {username: user.id, password: user.password, nickname: user.nickname, image: user.image, friends: user.contacts}});
           return;
         }
       }
