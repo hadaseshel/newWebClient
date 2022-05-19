@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './Regist.css';
 import { useRef, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import Users from '../../Users.js';
 
 // alert if Password is not contain number, appercase and lowercase
 function ErrorPassrowd(){
@@ -69,7 +68,7 @@ function Regist({users}) {
   }
 
   // that function chak the valid of register
-  const checkRegister = function(){
+  const checkRegister = async function(){
   // inputs into varbiale of 
   let userName = usernameInput.current.value;
   let password = passwordInput.current.value;
@@ -86,9 +85,13 @@ function Regist({users}) {
     return;
   }
 
+  const response = await fetch('http://localhost:5034/api/users/');
+  let Users = await response.json();
+
   // alert if the username is in used in the app
-  for (var key in Users){
-      if (userName === key){
+  for (var i in Users){
+    const user = Users[i];
+      if (userName === user.id){
         setErrorPassrowd("");
         setErrorPassrowdCoinfirm("");
         setWrongRegex("")
@@ -128,9 +131,16 @@ function Regist({users}) {
     setErrorPassrowdCoinfirm("the password is not eqal to the confirm passraword");
     return;
   }
-  const user = {username:userName, password: password, nickname: nickName, image: foto, friends: []};
-  Users[userName]=user;
-  navigate("/chats",{state: {username: userName ,password: password, nickname: nickName, image: foto, friends: []}});
+
+  const res = await fetch('http://localhost:5034/api/users/',{
+    method: 'POST',
+    headers:{
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({id:userName, password:password, nickname:nickName, image:foto})
+  });
+  // need to contine this
+  await navigate("/chats",{state: {username: userName ,password: password, nickname: nickName, image: foto, friends: []}});
 }
 
     // handle the enter key , regist by press in enter key

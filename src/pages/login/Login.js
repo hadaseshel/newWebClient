@@ -31,14 +31,12 @@ function Login() {
   const checkLogin = async function(){
     let userName = usernameInput.current.value;
     let password = passwordInput.current.value;
-    const response = await fetch('http://localhost:5034/api/contacts/users');
+    const response = await fetch('http://localhost:5034/api/users/');
     let Users = await response.json();
     for (var i in Users){
       const user = Users[i];
       // if the username and the password are correct, move to the chats page. (working!)
         if (userName === user.id && password === user.password){
-          // do POST request to the login controller
-          fetch('http://localhost:5034/api/login/'+ user.id +'/',{ method: "POST"})
           navigate("/chats",{state: {username: user.id, password: user.password, nickname: user.nickname, image: user.image, friends: user.contacts}});
           return;
         }

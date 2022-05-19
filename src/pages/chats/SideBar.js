@@ -6,19 +6,16 @@ import ChatListUpdate from "./ChatListUpdate";
 import Users from "../../Users";
 
 function SideBar({user, createScreen}) {
-    const [chats, setCaths] = useState([])
+    const [chatList, setChatList] = useState([])
     useEffect(() => {
         async function fetchData() {
-            const response = await fetch('http://localhost:5034/api/contacts/');
+            var path = 'http://localhost:5034/api/contacts/'+ user.username + '/';
+            const response = await fetch(path);
             const data =  await response.json();
-            setCaths(data);
+            setChatList(data);
         }
         fetchData();
-      }, []); // Or [] if effect doesn't need props or state
-    console.log(chats);
-
-    // load the page with the new chat list after adding a new chat.
-    const [chatList, setChatList] = useState(chats);
+      }, []); // Or [] if effect doesn't need props or stat
 
     // update the chats list with the new contact
     const addChat = function(newContact) {
@@ -41,7 +38,7 @@ function SideBar({user, createScreen}) {
                 </div>
             </div>
             <div className="sidebar_chats">
-                <ChatListUpdate usernameinlogin={user.id} chats={chatList} createScreen={createScreen}/>
+                <ChatListUpdate usernameinlogin={user.username} chats={chatList} createScreen={createScreen}/>
             </div>
 
         </div>
