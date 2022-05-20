@@ -44,11 +44,11 @@ function MessagesList ({messages}) {
     );
 }
 
-function ChatScreen({usernameinlogin, username, nickname, image, messageList,createScreen, updateLastM}){
+function ChatScreen({usernameinlogin, username, nickname, image, messageList,server, createScreen, updateLastM}){
     const massege=useRef();
 
     // need to take care on the rander
-    const send = function({msgType, msg}){
+    const send = async function({msgType, msg}){
         if(msgType === "Text" && msg===""){
             return;
         } else if((msgType === "Image" || msgType === "Video")&& msg==null){
@@ -75,30 +75,35 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList,cre
         var month = today.getMonth()+1;
         var date = today.getDate() + "/" + month + "/" + today.getFullYear();
 
+        var time_and_date = time + date;
         //need to take care of push to the list by the proper chat contact
-        for(let i=0; i<Users[usernameinlogin].friends.length;i++){
-            if (Users[usernameinlogin].friends[i].username===username){
-                Users[usernameinlogin].friends[i].chat.push({type:msgType, message:msg, own:"me", time:time, date:date});
-                newArray=[...Users[usernameinlogin].friends[i].chat];
-                break;
-            }
-        }
+        // need to take care of faild
+        const res = await fetch('http://localhost:5034/api/contacts/'+ username + '/messages/',{
+            method: 'POST',
+            headers:{
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({userid:usernameinlogin, content:msg})
+        });
 
-    
-        // add the chat in the list of the friends
-        for(let i=0; i<Users[username].friends.length;i++){
-            if (Users[username].friends[i].username===usernameinlogin){
-                Users[username].friends[i].chat.push({type:msgType, message:msg, own: "not me", time:time, date:date});
-                break;
-            }
-        }
-
-        const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
-                                            messageList={newArray} createScreen={createScreen} updateLastM={updateLastM}/>;
-        createScreen(newChatScreen);
-
+        // transfer need to take care if this faild
+        var path = 'http://'+ server +'/api/transfer/';
+        const res2 = fetch(path,{
+            method: 'POST',
+            headers:{
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({from: usernameinlogin, to: username ,content:msg})
+        });
         // update the chat with the new last message in order to show last message in the sidebarChat
-        updateLastM(newArray);
+        // get the proper list now in server
+        var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
+        const response = await fetch(path);
+        const data =  await response.json();
+        updateLastM(data);
+        const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
+                                            messageList={data} createScreen={createScreen} updateLastM={updateLastM}/>;
+        createScreen(newChatScreen);
         document.getElementById('messageid').value = '';
     }
 

@@ -3,13 +3,13 @@ import "./SideBarChat.css";
 import Avatar from "./icons/Avatar";
 import ChatScreen from "./ChatScreen";
 
-function SideBarChat({usernameinlogin, username, nickname, image, createScreen}) {
+function SideBarChat({usernameinlogin, username, nickname, image, server, createScreen}) {
 
     // render this sidebar chat when a new message is added to the chat (of "me"), in order to update the "last message
     const [messageList, setMessageList] = useState([])
     useEffect(() => {
         async function fetchData() {
-            var path = 'http://localhost:5034/api/contacts/'+ usernameinlogin + '/' + username + '/messages/';
+            var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
             const response = await fetch(path);
             const data =  await response.json();
             setMessageList(data);
@@ -20,10 +20,9 @@ function SideBarChat({usernameinlogin, username, nickname, image, createScreen})
     // function that insert the chat screen when we click on a sidebar chat to the function "setChatScreen" in chats.js
     const clickOnChat = function() {
         const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname}
-                                            image={image} messageList={messageList} createScreen={createScreen} updateLastM={setMessageList}/>;
+                                            image={image} messageList={messageList} server={server} createScreen={createScreen} updateLastM={setMessageList}/>;
         createScreen(newChatScreen);
     }
-
     const lastMsg = messageList[messageList.length - 1]
 
     const infoText=function(type, message){

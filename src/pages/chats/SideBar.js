@@ -9,7 +9,7 @@ function SideBar({user, createScreen}) {
     const [chatList, setChatList] = useState([])
     useEffect(() => {
         async function fetchData() {
-            var path = 'http://localhost:5034/api/contacts/'+ user.username + '/';
+            var path = 'http://localhost:5034/api/contacts/?user='+ user.username;
             const response = await fetch(path);
             const data =  await response.json();
             setChatList(data);

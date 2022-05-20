@@ -140,7 +140,7 @@ function Regist({users}) {
     body: JSON.stringify({id:userName, password:password, nickname:nickName, image:foto})
   });
   // need to contine this
-  await navigate("/chats",{state: {username: userName ,password: password, nickname: nickName, image: foto, friends: []}});
+  navigate("/chats",{state: {username: userName ,password: password, nickname: nickName, image: foto, friends: []}});
 }
 
     // handle the enter key , regist by press in enter key
