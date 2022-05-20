@@ -78,12 +78,12 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList,ser
         var time_and_date = time + date;
         //need to take care of push to the list by the proper chat contact
         // need to take care of faild
-        const res = await fetch('http://localhost:5034/api/contacts/'+ username + '/messages/',{
+        const res = await fetch('http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin,{
             method: 'POST',
             headers:{
             'Content-Type': 'application/json'
             },
-            body: JSON.stringify({userid:usernameinlogin, content:msg})
+            body: JSON.stringify({content:msg})
         });
 
         // transfer need to take care if this faild
