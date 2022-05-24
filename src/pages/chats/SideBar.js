@@ -29,6 +29,7 @@ function SideBar({user, createScreen}) {
         Users[newContact.username].friends.push({username:user.username, nickname: user.nickname, image: user.image, chat: []});
     }
 
+
     return (
         <div className="sidebar">
             <div className="sidebar_header">

@@ -1,11 +1,11 @@
 import Avatar from "./icons/Avatar";
 import "./ChatScreen.css";
 import Send from "./icons/Send";
-import { useRef, useState } from "react";
+import {useEffect, useRef, useState } from "react";
 import UploadImage from "./upload/UploadImage";
-import UploadVideo from "./upload/UploadVideo"
-import UploadAudio from "./upload/UploadAudio"
-import Users from '../../Users';
+import UploadVideo from "./upload/UploadVideo";
+import UploadAudio from "./upload/UploadAudio";
+import * as signalR from "@microsoft/signalr";
 
 const MessageByType = function({ type, message }){
     if(type === "Image"){
@@ -44,11 +44,33 @@ function MessagesList ({messages}) {
     );
 }
 
-function ChatScreen({usernameinlogin, username, nickname, image, messageList,server, createScreen, updateLastM}){
+async function startSignalR({con, currentUser}) {
+    // using signalR for recieving new message.
+    await con.start();
+    con.invoke("CreateConID", currentUser).catch(function (err) {
+        return console.error(err.toString());})
+}
+
+
+
+function ChatScreen({usernameinlogin, username, nickname, image, messageList, server, createScreen, updateLastM}){
     const massege=useRef();
+
+    // using signalR for recieving new message.
+    var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
+    startSignalR({con: connection, currentUser: usernameinlogin})
+
+    // in order to scroll down automaticly
+    const messagesEndRef = useRef(null)
+
+    const scrollToBottom = () => {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+    useEffect(scrollToBottom, [messageList]);
 
     // need to take care on the rander
     const send = async function({msgType, msg}){
+
         if(msgType === "Text" && msg===""){
             return;
         } else if((msgType === "Image" || msgType === "Video")&& msg==null){
@@ -56,10 +78,7 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList,ser
         } else if(msgType === "Audio" && msg==""){
             return;
         } 
-
-        // new array to render
-        let newArray;
-
+        
         // take care om the time
         var today = new Date();
         var hours = today.getHours();
@@ -95,6 +114,12 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList,ser
             },
             body: JSON.stringify({from: usernameinlogin, to: username ,content:msg})
         });
+
+        // send signalR to the reciever
+        connection.invoke("SendMessage", username, JSON.stringify({from: usernameinlogin, to: username ,content:msg})
+        ).catch(function (err) {
+            return console.error(err.toString());})
+
         // update the chat with the new last message in order to show last message in the sidebarChat
         // get the proper list now in server
         var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
@@ -102,7 +127,7 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList,ser
         const data =  await response.json();
         updateLastM(data);
         const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
-                                            messageList={data} createScreen={createScreen} updateLastM={updateLastM}/>;
+                                            messageList={data} server = {server} createScreen={createScreen} updateLastM={updateLastM} connection={connection}/>;
         createScreen(newChatScreen);
         document.getElementById('messageid').value = '';
     }
@@ -124,6 +149,19 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList,ser
 
             <div className="chat_body" id="chat_body">
                 <MessagesList messages={messageList}/>
+                {// get a message if another user send it to me. 
+                    connection.on("ReceiveMessage", async function (message) {
+                    var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
+                    const response = await fetch(path);
+                    const data = await response.json();
+                    //console.log(data);
+                    updateLastM(data);
+                    const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
+                                           messageList={data} server = {server} createScreen={createScreen} updateLastM={updateLastM}/>;
+                    createScreen(newChatScreen);
+                    document.getElementById('messageid').value = '';
+                })}
+                <div ref={messagesEndRef} />
             </div>
 
             <div className="chat_footer">
