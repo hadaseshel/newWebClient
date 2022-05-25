@@ -82,15 +82,15 @@ async function startSignalR({con, currentUser}) {
 
 
 
-function ChatScreen({usernameinlogin, username, nickname, image, messageList, server, createScreen, updateLastM}){
+function ChatScreen({usernameinlogin, username, nickname, image, messageList, server, createScreen, updateLastM, connection}){
     const massege=useRef();
     const [errorConractServer,setErrorConractServer] = useState("")
     const [errortServer,setErrorServer] = useState("")
     const [errortServerGet,SetErrortServerGet]= useState("")
 
     // using signalR for recieving new message.
-    //var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
-    //startSignalR({con: connection, currentUser: usernameinlogin})
+    var _connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
+    startSignalR({con: _connection, currentUser: usernameinlogin})
 
     // in order to scroll down automaticly
     const messagesEndRef = useRef(null)
@@ -136,9 +136,9 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
             .then(handleErrors)
             .then(async function(){
                 // send signalR to the reciever
-               // connection.invoke("SendMessage", username, JSON.stringify({from: usernameinlogin, to: username ,content:msg})
-               // ).catch(function (err) {
-               //     return console.error(err.toString());})
+                _connection.invoke("SendMessage", username, JSON.stringify({from: usernameinlogin, to: username ,content:msg})
+                ).catch(function (err) {
+                    return console.error(err.toString());})
                 var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
                 const response = await fetch(path);
                 const data =  await response.json();
@@ -188,11 +188,11 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
                 {(errortServerGet!="")?(<ErrorMyServerNotAilabilityByGet/>):""}
                 <MessagesList messages={messageList}/>
                 {// get a message if another user send it to me. 
-                    /*connection.on("ReceiveMessage", async function (message) {
-                        console.log(message);
+                    _connection.on("ReceiveMessage", async function (message) {
+                        //console.log(message);
                         var dataMsg = JSON.parse(message);
                         var sender = dataMsg["from"];
-                        console.log(sender);
+                        //console.log(sender);
                         if (sender == username) {
                             var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
                             const response = await fetch(path);
@@ -210,7 +210,7 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
                             //updateLastM(data);
                             document.getElementById('messageid').value = '';
                         }
-                })*/}
+                })}
                 <div ref={messagesEndRef} />
             </div>
 

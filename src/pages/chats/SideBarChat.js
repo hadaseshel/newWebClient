@@ -11,7 +11,7 @@ function handleErrors(response) {
     return response;
 }
 
-function SideBarChat({usernameinlogin, username, nickname, image, server, createScreen}) {
+function SideBarChat({usernameinlogin, username, nickname, image, server, createScreen, connection}) {
 
     // render this sidebar chat when a new message is added to the chat (of "me"), in order to update the "last message
     const [messageList, setMessageList] = useState([])
@@ -54,7 +54,7 @@ function SideBarChat({usernameinlogin, username, nickname, image, server, create
     // function that insert the chat screen when we click on a sidebar chat to the function "setChatScreen" in chats.js
     const clickOnChat = function() {
         const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname}
-                                            image={image} messageList={messageList} server={server} createScreen={createScreen} updateLastM={setMessageList}/>;
+                                            image={image} messageList={messageList} server={server} createScreen={createScreen} updateLastM={setMessageList} connection={connection}/>;
         createScreen(newChatScreen);
     }
 

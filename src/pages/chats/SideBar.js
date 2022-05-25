@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Avatar from "./icons/Avatar";
 import NewChat from "./NewChat";
 import ChatListUpdate from "./ChatListUpdate";
-import Users from "../../Users";
+import * as signalR from "@microsoft/signalr";
 
 function handleErrors(response) {
     if (!response.ok) {
@@ -17,6 +17,15 @@ function ErrorGetContacts(){
       <div className="alert" role="alert">There is a problem with your server or with your request, the credible information about the chats could not be displayed.</div>
     );
 }
+
+/*
+
+async function startSignalR({con, currentUser}) {
+    // using signalR for recieving new message.
+    await con.start();
+    con.invoke("CreateConID", currentUser).catch(function (err) {
+        return console.error(err.toString());})
+}*/
 
 function SideBar({user, createScreen}) {
     const [errorGetContacts, setErrorGetContacts] = useState("")
@@ -36,6 +45,23 @@ function SideBar({user, createScreen}) {
         );
     }
     getContacts();
+
+    // using signalR for recieving new message.
+    //var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
+
+    /*
+    useEffect( () => {
+        async function startSignalR(){
+                    // using signalR for recieving new message.
+                    await connection.start();
+                    connection.invoke("CreateConID", user.username).catch(function (err) {
+                        return console.error(err.toString());})
+
+        }
+        startSignalR();
+    }, []);*/
+    var connection;
+
     // update the chats list with the new contact
     const addChat = function(newContact) {
         fetch('http://localhost:5034/api/contacts/?user=' + user.username,{
@@ -86,7 +112,7 @@ function SideBar({user, createScreen}) {
             </div>
             <div className="sidebar_chats">
                 {(errorGetContacts!="")?(<ErrorGetContacts/>):""}
-                <ChatListUpdate usernameinlogin={user.username} chats={chatList} createScreen={createScreen}/>
+                <ChatListUpdate usernameinlogin={user.username} chats={chatList} createScreen={createScreen} connection={connection}/>
             </div>
 
         </div>
