@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./SideBarChat.css";
 import Avatar from "./icons/Avatar";
 import ChatScreen from "./ChatScreen";
+import * as signalR from "@microsoft/signalr";
 
 function handleErrors(response) {
     if (!response.ok) {
@@ -48,6 +49,7 @@ function SideBarChat({usernameinlogin, username, nickname, image, server, create
         );
     }
     getMessages();
+
 
     // function that insert the chat screen when we click on a sidebar chat to the function "setChatScreen" in chats.js
     const clickOnChat = function() {

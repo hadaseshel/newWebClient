@@ -2,9 +2,8 @@ import React from 'react';
 import "./Chats.css";
 import SideBar from './SideBar';
 import { useLocation } from 'react-router-dom';
-import ChatScreen from "./ChatScreen.js";
-import Users from '../../Users';
 import { useState } from "react";
+import * as signalR from "@microsoft/signalr";
 
 function ErrorChat(){
   return(
@@ -25,6 +24,7 @@ function Chats({}) {
     setChatScreen(newScreen);
   }
 
+
   if (location.state==null){
     return(<ErrorChat/>);
   }
@@ -32,7 +32,7 @@ function Chats({}) {
   return(
     <div className="chats">
       <div className="chats_body">
-        <SideBar user={location.state} createScreen={createChatScreen} />
+        <SideBar user={location.state} createScreen={createChatScreen}/>
         {(chatScreen !== null)? chatScreen:null}
       </div>
     </div>

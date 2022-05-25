@@ -75,6 +75,7 @@ function SideBar({user, createScreen}) {
         );
     }
 
+
     return (
         <div className="sidebar">
             <div className="sidebar_header">

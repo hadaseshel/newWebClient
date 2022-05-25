@@ -7,6 +7,11 @@ export default function ChatListUpdate ( {usernameinlogin, chats, createScreen} 
     const chatList = chats.map((friend, key) => {
         return <SideBarChat usernameinlogin={usernameinlogin} username={friend.id} nickname={friend.name} image={friend.image} server={friend.server} createScreen={createScreen} key={key}/>;
     });
+
+    const getChatsList = function() {
+        return chatList;
+    }
+    
     return (
         <div className="chatsList">
             {chatList}
