@@ -3,14 +3,9 @@ import "./ChatScreen.css";
 import Send from "./icons/Send";
 import {useEffect, useRef, useState } from "react";
 import UploadImage from "./upload/UploadImage";
-<<<<<<< HEAD
-import UploadVideo from "./upload/UploadVideo"
-import UploadAudio from "./upload/UploadAudio"
-=======
 import UploadVideo from "./upload/UploadVideo";
 import UploadAudio from "./upload/UploadAudio";
 import * as signalR from "@microsoft/signalr";
->>>>>>> 9cb3e9dc1d0a3a1fb40ddf276c36796b5dfb0b59
 
 // alert if There was a problem with the contact's server
 function ErrorContactsServerNotAilability(){
@@ -71,7 +66,6 @@ function MessagesList ({messages}) {
     );
 }
 
-<<<<<<< HEAD
 function handleErrors(response) {
     if (!response.ok) {
         throw Error(response.status);
@@ -79,8 +73,6 @@ function handleErrors(response) {
     return response;
 }
 
-function ChatScreen({usernameinlogin, username, nickname, image, messageList,server, createScreen, updateLastM}){
-=======
 async function startSignalR({con, currentUser}) {
     // using signalR for recieving new message.
     await con.start();
@@ -91,7 +83,6 @@ async function startSignalR({con, currentUser}) {
 
 
 function ChatScreen({usernameinlogin, username, nickname, image, messageList, server, createScreen, updateLastM}){
->>>>>>> 9cb3e9dc1d0a3a1fb40ddf276c36796b5dfb0b59
     const massege=useRef();
     const [errorConractServer,setErrorConractServer] = useState("")
     const [errortServer,setErrorServer] = useState("")
@@ -110,12 +101,8 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
     useEffect(scrollToBottom, [messageList]);
 
     // need to take care on the rander
-<<<<<<< HEAD
-    const send = function({msgType, msg}){
-=======
     const send = async function({msgType, msg}){
 
->>>>>>> 9cb3e9dc1d0a3a1fb40ddf276c36796b5dfb0b59
         if(msgType === "Text" && msg===""){
             return;
         } else if((msgType === "Image" || msgType === "Video")&& msg==null){
@@ -123,32 +110,9 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
         } else if(msgType === "Audio" && msg==""){
             return;
         } 
-<<<<<<< HEAD
 
        var id;
         fetch('http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin,{
-=======
-        
-        // take care om the time
-        var today = new Date();
-        var hours = today.getHours();
-        if(hours==0||hours==1||hours==2||hours==3||hours==4||hours==5||hours==6||hours==7||hours==8||hours==9){
-            hours = "0" + hours;
-        }
-        var minutes = today.getMinutes();
-        if(minutes==0||minutes==1||minutes==2||minutes==3||minutes==4||minutes==5||minutes==6||minutes==7||minutes==8||minutes==9){
-            minutes = "0" + minutes;
-        }
-        var time = hours + ":" + minutes;
-
-        var month = today.getMonth()+1;
-        var date = today.getDate() + "/" + month + "/" + today.getFullYear();
-
-        var time_and_date = time + date;
-        //need to take care of push to the list by the proper chat contact
-        // need to take care of faild
-        const res = await fetch('http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin,{
->>>>>>> 9cb3e9dc1d0a3a1fb40ddf276c36796b5dfb0b59
             method: 'POST',
             headers:{
             'Content-Type': 'application/json'
@@ -168,10 +132,13 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
             'Content-Type': 'application/json'
             },
             body: JSON.stringify({from: usernameinlogin, to: username ,content:msg})
-<<<<<<< HEAD
             })
             .then(handleErrors)
             .then(async function(){
+                // send signalR to the reciever
+                connection.invoke("SendMessage", username, JSON.stringify({from: usernameinlogin, to: username ,content:msg})
+                ).catch(function (err) {
+                    return console.error(err.toString());})
                 var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
                 const response = await fetch(path);
                 const data =  await response.json();
@@ -198,25 +165,6 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
                 setErrorServer("error");
             }
         );
-=======
-        });
-
-        // send signalR to the reciever
-        connection.invoke("SendMessage", username, JSON.stringify({from: usernameinlogin, to: username ,content:msg})
-        ).catch(function (err) {
-            return console.error(err.toString());})
-
-        // update the chat with the new last message in order to show last message in the sidebarChat
-        // get the proper list now in server
-        var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
-        const response = await fetch(path);
-        const data =  await response.json();
-        updateLastM(data);
-        const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
-                                            messageList={data} server = {server} createScreen={createScreen} updateLastM={updateLastM} connection={connection}/>;
-        createScreen(newChatScreen);
-        document.getElementById('messageid').value = '';
->>>>>>> 9cb3e9dc1d0a3a1fb40ddf276c36796b5dfb0b59
     }
 
     // handle the enter key , send message by press in enter key
