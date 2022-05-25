@@ -41,6 +41,20 @@ function WrongPattern(){
   );
 }
 
+// if there is error in serevr
+function ErrorInServer(){
+  return(
+    <div className="alert" role="alert">There is a problem with your server, can not register.</div>
+  );
+}
+
+function handleErrors(response) {
+  if (!response.ok) {
+      throw Error(response.status);
+  }
+  return response;
+}
+
 function Regist({users}) {
   // referrence to input os user
   const usernameInput = useRef();
@@ -59,8 +73,18 @@ function Regist({users}) {
   const [nameInUse, setNameInUse] = useState("");
   const [empty, setEmpty] = useState("");
   const [wrongRegex, setWrongRegex] = useState("");
+  const [errorServer, setErrorServer] = useState("");
   const[foto,setFoto] = useState(null);
   const target = useRef(null);
+
+  const clearErrors = function(){
+    setErrorPassrowd("");
+    setErrorPassrowdCoinfirm("");
+    setWrongRegex("")
+    setNameInUse("");
+    setEmpty("");
+    setErrorServer("");
+  }
 
   const HandelUpload = (e) => {
     const uploaded = e.target.files[0];
@@ -77,10 +101,7 @@ function Regist({users}) {
 
   // alert if there is empty input
   if(userName==="" || password ==="" || nickName === "" || coinfirmPassword === ""){
-    setErrorPassrowd("");
-    setErrorPassrowdCoinfirm("");
-    setWrongRegex("")
-    setNameInUse("");
+    clearErrors();
     setEmpty("empty");
     return;
   }
@@ -92,10 +113,7 @@ function Regist({users}) {
   for (var i in Users){
     const user = Users[i];
       if (userName === user.id){
-        setErrorPassrowd("");
-        setErrorPassrowdCoinfirm("");
-        setWrongRegex("")
-        setEmpty("");
+        clearErrors();
         setNameInUse("used");
         return;
       }
@@ -104,30 +122,21 @@ function Regist({users}) {
   // alert if the username or password or nickname doesnot fit the regex
   var validRegex = /^[a-zA-Z0-9]+$/;
   if(!validRegex.test(userName)||!validRegex.test(nickName)){
-    setErrorPassrowd("");
-    setEmpty("");
-    setErrorPassrowdCoinfirm("");
-    setNameInUse("");
+    clearErrors();
     setWrongRegex("wrong pattern");
     return;
   }
 
   // alert if Password is not contain number, appercase and lowercase
   if(!/\d/g.test(password)||!/[a-z]/g.test(password)||!/[A-Z]/g.test(password)||!validRegex.test(password)||password.length<8){
-    setEmpty("");
-    setNameInUse("");
-    setWrongRegex("");
-    setErrorPassrowdCoinfirm("");
+    clearErrors();
     setErrorPassrowd("error in password")
     return;
   }
 
   // alert if Password and confirm password does not match
   if(password!==coinfirmPassword){
-    setErrorPassrowd("");
-    setEmpty("");
-    setNameInUse("");
-    setWrongRegex("");
+    clearErrors();
     setErrorPassrowdCoinfirm("the password is not eqal to the confirm passraword");
     return;
   }
@@ -139,8 +148,13 @@ function Regist({users}) {
     },
     body: JSON.stringify({id:userName, password:password, nickname:nickName, image:foto})
   });
-  // need to contine this
-  navigate("/chats",{state: {username: userName ,password: password, nickname: nickName, image: foto, friends: []}});
+  if(res.status == 404){
+    clearErrors();
+    setErrorServer("error");
+    return;
+  }else{
+    navigate("/chats",{state: {username: userName ,password: password, nickname: nickName, image: foto, friends: [], server:"localhost:5034"}});
+  }
 }
 
     // handle the enter key , regist by press in enter key
@@ -160,6 +174,7 @@ function Regist({users}) {
         {(nameInUse!="")?(<UserNameInUsed/>):""}
         {(wrongRegex!="")?(<WrongPattern/>):""}
         {(errorPassrowd!="")?(<ErrorPassrowd/>):""}
+        {(errorServer!="")?(<ErrorInServer/>):""}
         <div className="form-group row">
           <label className="col-sm-4 col-form-label"> Username </label>
           <div className="col-sm-8">
@@ -201,10 +216,16 @@ function Regist({users}) {
         </div>
         
         <div>
-          <label> Already registred?&nbsp; </label>
+          <label> Already registred?</label>
           <button className="button_of_link" onClick={()=>{navigate("/")}}>Click here</button>
-          <label>&nbsp;to login </label> 
+          <label>to login </label> 
         </div>
+
+        <div>
+            <label>Would you like to rate us?&nbsp; </label>
+            <a className="button_of_link" href="http://localhost:5034/">Click here</a>
+            <label>&nbsp;to rate the site </label> 
+          </div>
       </div>
       <div className="form-group row" id="last div">&nbsp;</div>
    </div>);

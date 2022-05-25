@@ -1,11 +1,31 @@
 import AvatarPlusIcon from "./icons/AvatarPlusIcon";
-import Users from '../../Users.js';
 import { useRef ,useState} from "react";
 
-// alert if The user who enterd does not exist
-function ErrorUserIsNotExist(){
+// alert if There was a problem with the contact's server
+function ErrorServerNotAilability(){
     return(
-      <div className="alert" role="alert">The user you entered does not exist.</div>
+      <div className="alert" role="alert">There was a problem with your server, the new contact could not be added.</div>
+    );
+}
+
+// alert if There was a problem with the contact's server
+function ErrorNoContactsInServer(){
+    return(
+      <div className="alert" role="alert">There is no contact with the user name you entered in the server you entered.</div>
+    );
+}
+
+// alert if There was a problem with the contact's server
+function ErrorContactsServerNotAilability(){
+    return(
+      <div className="alert" role="alert">There is a problem connecting to the contact's server, please check if the server address is accurate.</div>
+    );
+}
+
+// alert if The user who enterd does not exist
+function ErrorEmptyFields(){
+    return(
+      <div className="alert" role="alert">You must fill in all the fields.</div>
     );
 }
 
@@ -24,63 +44,65 @@ function ErrorAlreadyHaveTheContact(){
 }
 
 
-export default function NewChat( {addChat,user}) {
+export default function NewChat( {addChat,user,chatList}) {
 
     // reference to input of user
-    const contactInput = useRef();
+    const idInput = useRef();
+    const nicknameInput = useRef();
+    const serverInput = useRef();
 
     // state to hendle error
-    const [errorUserIsNotExist, setErrorUserIsNotExist] = useState("");
+    const [errorServerNotAilability, setErrorServerNotAilability] = useState("");
+    const [errorContactsServerNotAilability, setErrorContactsServerNotAilability] = useState("");
+    const [errorEmptyFields, setErrorEmptyFields] = useState("");
     const [errorCanotAddMySelf, setErrorCanotAddMySelf] = useState("");
     const [errorAlreadyHaveTheContact, setErrorAlreadyHaveTheContact] = useState("");
+    const [errorNoContactsInServer, setErrorNoContactsInServer] = useState("");
 
     const clearErorrs = function(){
+        setErrorNoContactsInServer("");
+        setErrorServerNotAilability("");
+        setErrorContactsServerNotAilability("");
         setErrorCanotAddMySelf("");
-        setErrorUserIsNotExist("");
+        setErrorEmptyFields("");
         setErrorAlreadyHaveTheContact("");
-        document.getElementById('newcontant').value = '';
+    }
+
+    const clearField = function(){
+        document.getElementById('idcontant').value = '';
+        document.getElementById('nicknamecontant').value = '';
+        document.getElementById('servercontant').value = '';
     }
 
     const addContact = function(){
         // the input of the new contact
-        let contactName = contactInput.current.value;
+        let contactName = idInput.current.value;
+        let nicknamecontant = nicknameInput.current.value;
+        let servercontant = serverInput.current.value;
         if(contactName === user.username){
-            setErrorUserIsNotExist("");
-            setErrorAlreadyHaveTheContact("");
+            clearErorrs();
             setErrorCanotAddMySelf("error");
             return;
 
         }
-    
-        // find the new contact in the Users list. if it exists, add it to the user's friends.
-        for (var key in Users) {
-            if (key == contactName) {
-                // check if the user try to add contact that already exsit.
-                for (var index = 0; index < user.friends.length; index++) {
-                    if (user.friends[index].username===key){
-                        setErrorCanotAddMySelf("");
-                        setErrorUserIsNotExist("");
-                        setErrorAlreadyHaveTheContact("eroor");
-                        return;
-                    }
-                }
-                addChat({username:key, nickname: Users[key].nickname, image: Users[key].image, chat: []});
-                document.getElementById('newcontant').value = '';
-                setErrorCanotAddMySelf("");
-                setErrorUserIsNotExist("");
-                setErrorAlreadyHaveTheContact("");
+        if(contactName==="" || nicknamecontant ==="" || servercontant === ""){
+            clearErorrs();
+            setErrorEmptyFields("error");
+            return;
+        }
+        // check if the user try to add contact that already exsit.
+        for (var item in chatList) {
+            if (chatList[item].id === contactName){
+                clearErorrs();
+                setErrorAlreadyHaveTheContact("eroor");
                 return;
             }
         }
-        if(contactName===""){
-            setErrorCanotAddMySelf("");
-            setErrorUserIsNotExist("");
-            setErrorAlreadyHaveTheContact("");
-            return;
-        }
-        setErrorAlreadyHaveTheContact("");
-        setErrorCanotAddMySelf("");
-        setErrorUserIsNotExist("not exist");
+        addChat({id:contactName, nickname: nicknamecontant, server: servercontant,
+            setConEr: setErrorContactsServerNotAilability, setSerEr:setErrorServerNotAilability, setConExitEr: setErrorNoContactsInServer});
+        clearErorrs();
+        clearField();
+        return;        
     }
 
 
@@ -101,12 +123,29 @@ export default function NewChat( {addChat,user}) {
                         <div className="modal-body">
                             <div className="form-group row">
                                 <div className="col-sm-12">
-                                    {(errorUserIsNotExist!="")?(<ErrorUserIsNotExist/>):""}
+                                    {(errorEmptyFields!="")?(<ErrorEmptyFields/>):""}
                                     {(errorAlreadyHaveTheContact!="")?(<ErrorAlreadyHaveTheContact/>):""}
                                     {(errorCanotAddMySelf!="")?(<ErrorCanotAddMySelf/>):""}
+                                    {(errorServerNotAilability!="")?(<ErrorServerNotAilability/>):""}
+                                    {(errorContactsServerNotAilability!="")?(<ErrorContactsServerNotAilability/>):""}
+                                    {(errorNoContactsInServer!="")?(<ErrorNoContactsInServer/>):""}
                                 </div>
-                                <div className="col-sm-12">
-                                    <input placeholder="contact's identifier" id="newcontant" name="nwecontant" ref={contactInput}></input>
+                                <div className="form-group row">
+                                    <div className="col-sm-12">
+                                        <input placeholder="Enter the user name of the new contact" id="idcontant" name="idcontant" ref={idInput}></input>
+                                    </div>
+                                </div>
+                                <div>&nbsp;</div>
+                                <div className="form-group row">
+                                    <div className="col-sm-12">
+                                        <input placeholder="Enter the nickname of the new contact" id="nicknamecontant" name="nicknamecontant" ref={nicknameInput}></input>
+                                    </div>
+                                </div>
+                                <div>&nbsp;</div>
+                                <div className="form-group row">
+                                    <div className="col-sm-12">
+                                        <input placeholder="Enter the server of the new contact" id="servercontant" name="servercontant" ref={serverInput}></input>
+                                    </div>
                                 </div>
                             </div>
                         </div>

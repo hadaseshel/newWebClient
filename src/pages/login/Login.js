@@ -18,6 +18,13 @@ function EmptyDetails(){
   );
 }
 
+// if there is error in serevr
+function ErrorInServer(){
+  return(
+    <div className="alert" role="alert">There is a problem with your server, can not login.</div>
+  );
+}
+
 function Login() {
   // reference to input of user
   const usernameInput = useRef();
@@ -27,17 +34,28 @@ function Login() {
   // states for hendale errors
   const [error, setError] = useState("");
   const [empty, setEmpty] = useState("");
+  const [errorServer, setErrorServer] = useState("");
 
   const checkLogin = async function(){
     let userName = usernameInput.current.value;
     let password = passwordInput.current.value;
     const response = await fetch('http://localhost:5034/api/users/');
-    let Users = await response.json();
+    let Users;
+    if(response.status == 404){
+      setError("");
+      setEmpty("");
+      setErrorServer("ERROR");
+      return;
+    }else{
+      setErrorServer("");
+      Users = await response.json();
+    }
+    //let Users = await response.json();
     for (var i in Users){
       const user = Users[i];
       // if the username and the password are correct, move to the chats page. (working!)
         if (userName === user.id && password === user.password){
-          navigate("/chats",{state: {username: user.id, password: user.password, nickname: user.nickname, image: user.image, friends: user.contacts}});
+          navigate("/chats",{state: {username: user.id, password: user.password, nickname: user.nickname, image: user.image, friends: user.contacts ,server:user.server}});
           return;
         }
       }
@@ -62,6 +80,7 @@ function Login() {
     <div className = "container"> 
         <img src="logoHioosh.png" id ="logo" width = "170" height= "170"></img>
         <div id = "login" onKeyPress={handleKeypress}>
+          {(errorServer!="")?(<ErrorInServer/>):""}
           {(error!="")?(<WongDetails/>):""}
           {(empty!="")?(<EmptyDetails/>):""}
           <div className="form-group row">
@@ -83,9 +102,15 @@ function Login() {
           </div>
           
           <div>
-            <label> Not registred?&nbsp; </label>
+            <label> Not registred? </label>
             <button className="button_of_link" onClick={()=>{navigate("/regist")}}>Click here</button>
-            <label>&nbsp;to register </label> 
+            <label>to register </label> 
+          </div>
+
+          <div>
+            <label>Would you like to rate us?&nbsp; </label>
+            <a className="button_of_link" href="http://localhost:5034/">Click here</a>
+            <label>&nbsp;to rate the site </label> 
           </div>
         </div>
         <div className="form-group row" id="last div">&nbsp;</div>

@@ -5,28 +5,74 @@ import NewChat from "./NewChat";
 import ChatListUpdate from "./ChatListUpdate";
 import Users from "../../Users";
 
-function SideBar({user, createScreen}) {
-    const [chatList, setChatList] = useState([])
-    useEffect(() => {
-        async function fetchData() {
-            var path = 'http://localhost:5034/api/contacts/?user='+ user.username;
-            const response = await fetch(path);
-            const data =  await response.json();
-            setChatList(data);
-        }
-        fetchData();
-      }, []); // Or [] if effect doesn't need props or stat
+function handleErrors(response) {
+    if (!response.ok) {
+        throw Error(response.status);
+    }
+    return response;
+}
 
+function ErrorGetContacts(){
+    return(
+      <div className="alert" role="alert">There is a problem with your server or with your request, the credible information about the chats could not be displayed.</div>
+    );
+}
+
+function SideBar({user, createScreen}) {
+    const [errorGetContacts, setErrorGetContacts] = useState("")
+    const [chatList, setChatList] = useState([])
+    function getContacts() {
+        fetch('http://localhost:5034/api/contacts/?user='+ user.username)
+        .then(handleErrors)
+        .then(response => response.json())
+        .then(data => setChatList(data))
+        .then(response => setErrorGetContacts(""))
+        .catch(
+            function(error){
+                if(error.message === '400' || error.message === '404'){
+                    setErrorGetContacts("ERROR");
+                }
+            }
+        );
+    }
+    getContacts();
     // update the chats list with the new contact
     const addChat = function(newContact) {
-        // change the state of the chatList
-        let newArray=[...chatList];
-        newArray.push(newContact);
-        setChatList(newArray);
-        // add to the list of chat in the users Array
-        Users[user.username].friends.push(newContact);
-        // add mySelf to the other list of friends
-        Users[newContact.username].friends.push({username:user.username, nickname: user.nickname, image: user.image, chat: []});
+        fetch('http://localhost:5034/api/contacts/?user=' + user.username,{
+            method: 'POST',
+            headers:{
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({id:newContact.id, name:newContact.nickname, server:newContact.server})
+        })
+        .then(handleErrors)
+        .then(function(){
+            fetch('http://'+ newContact.server +'/api/invitations/',{
+                method: 'POST',
+                headers:{
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({from: user.username, to: newContact.id ,server: user.server})
+            })
+            .then(handleErrors)
+            .catch(
+                function(error){
+                    if(error.message === '404'){
+                        newContact.setConExitEr("error");
+                    }else if(error.message === 'Failed to fetch'){
+                        newContact.setConEr("eror");
+                    }
+                    fetch('http://localhost:5034/api/contacts/'+ newContact.id +'/?user='+ user.username,{method: 'DELETE'});
+                }
+            );
+        })
+        .catch(
+            function(error){
+                newContact.setConExitEr("");
+                newContact.setConEr("");
+                newContact.setSerEr("eror");
+            }
+        );
     }
 
     return (
@@ -34,10 +80,11 @@ function SideBar({user, createScreen}) {
             <div className="sidebar_header">
                 {(user.image!==null)?<img id="userimag" src={user.image} />:<Avatar/>}
                 <div className="sidebar_headerR">
-                    <NewChat addChat={addChat} user={user}/>
+                    <NewChat addChat={addChat} user={user} chatList={chatList}/>
                 </div>
             </div>
             <div className="sidebar_chats">
+                {(errorGetContacts!="")?(<ErrorGetContacts/>):""}
                 <ChatListUpdate usernameinlogin={user.username} chats={chatList} createScreen={createScreen}/>
             </div>
 

@@ -5,8 +5,29 @@ import { useRef, useState } from "react";
 import UploadImage from "./upload/UploadImage";
 import UploadVideo from "./upload/UploadVideo"
 import UploadAudio from "./upload/UploadAudio"
-import Users from '../../Users';
 
+// alert if There was a problem with the contact's server
+function ErrorContactsServerNotAilability(){
+    return(
+      <div className="alert" role="alert">There is a problem connecting to the contact's server, can not send the message.</div>
+    );
+}
+
+// alert if There was a problem with the my server
+function ErrorMyServerNotAilability(){
+    return(
+      <div className="alert" role="alert">There was a problem with your server, can not send the message.</div>
+    );
+}
+
+// alert if There was a problem with the my server
+function ErrorMyServerNotAilabilityByGet(){
+    return(
+      <div className="alert" role="alert">There was a problem with your server, the message has been sent,but the credible information about the chats could not be displayed.</div>
+    );
+}
+
+// create the fit message to the proper type
 const MessageByType = function({ type, message }){
     if(type === "Image"){
         return(
@@ -44,11 +65,21 @@ function MessagesList ({messages}) {
     );
 }
 
+function handleErrors(response) {
+    if (!response.ok) {
+        throw Error(response.status);
+    }
+    return response;
+}
+
 function ChatScreen({usernameinlogin, username, nickname, image, messageList,server, createScreen, updateLastM}){
     const massege=useRef();
+    const [errorConractServer,setErrorConractServer] = useState("")
+    const [errortServer,setErrorServer] = useState("")
+    const [errortServerGet,SetErrortServerGet]= useState("")
 
     // need to take care on the rander
-    const send = async function({msgType, msg}){
+    const send = function({msgType, msg}){
         if(msgType === "Text" && msg===""){
             return;
         } else if((msgType === "Image" || msgType === "Video")&& msg==null){
@@ -57,54 +88,56 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList,ser
             return;
         } 
 
-        // new array to render
-        let newArray;
-
-        // take care om the time
-        var today = new Date();
-        var hours = today.getHours();
-        if(hours==0||hours==1||hours==2||hours==3||hours==4||hours==5||hours==6||hours==7||hours==8||hours==9){
-            hours = "0" + hours;
-        }
-        var minutes = today.getMinutes();
-        if(minutes==0||minutes==1||minutes==2||minutes==3||minutes==4||minutes==5||minutes==6||minutes==7||minutes==8||minutes==9){
-            minutes = "0" + minutes;
-        }
-        var time = hours + ":" + minutes;
-
-        var month = today.getMonth()+1;
-        var date = today.getDate() + "/" + month + "/" + today.getFullYear();
-
-        var time_and_date = time + date;
-        //need to take care of push to the list by the proper chat contact
-        // need to take care of faild
-        const res = await fetch('http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin,{
+       var id;
+        fetch('http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin,{
             method: 'POST',
             headers:{
             'Content-Type': 'application/json'
             },
             body: JSON.stringify({content:msg})
-        });
-
-        // transfer need to take care if this faild
-        var path = 'http://'+ server +'/api/transfer/';
-        const res2 = fetch(path,{
+        })
+        .then(handleErrors)
+        .then(response => response.json())
+        .then(data => id=data.id)
+        .then(function(){
+            setErrorServer("");
+            setErrorConractServer("");
+            SetErrortServerGet("")
+            fetch('http://'+ server +'/api/transfer/',{
             method: 'POST',
             headers:{
             'Content-Type': 'application/json'
             },
             body: JSON.stringify({from: usernameinlogin, to: username ,content:msg})
-        });
-        // update the chat with the new last message in order to show last message in the sidebarChat
-        // get the proper list now in server
-        var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
-        const response = await fetch(path);
-        const data =  await response.json();
-        updateLastM(data);
-        const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
-                                            messageList={data} createScreen={createScreen} updateLastM={updateLastM}/>;
-        createScreen(newChatScreen);
-        document.getElementById('messageid').value = '';
+            })
+            .then(handleErrors)
+            .then(async function(){
+                var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
+                const response = await fetch(path);
+                const data =  await response.json();
+                if(!response.ok){
+                    SetErrortServerGet("error")
+                }else{
+                    updateLastM(data);
+                    const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
+                                                        messageList={data} server={server} createScreen={createScreen} updateLastM={updateLastM}/>;
+                    createScreen(newChatScreen);
+                    document.getElementById('messageid').value = '';  
+                }
+            })
+            .catch(
+                function(error){
+                    fetch('http://localhost:5034/api/contacts/'+ username + '/messages/'+ id +'/?user=' + usernameinlogin,{method: 'DELETE'});
+                    document.getElementById('messageid').value = '';
+                    setErrorConractServer("error");
+                }
+            );
+        })
+        .catch(
+            function(error){
+                setErrorServer("error");
+            }
+        );
     }
 
     // handle the enter key , send message by press in enter key
@@ -123,6 +156,9 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList,ser
             </div>
 
             <div className="chat_body" id="chat_body">
+                {(errorConractServer!="")?(<ErrorContactsServerNotAilability/>):""}
+                {(errortServer!="")?(<ErrorMyServerNotAilability/>):""}
+                {(errortServerGet!="")?(<ErrorMyServerNotAilabilityByGet/>):""}
                 <MessagesList messages={messageList}/>
             </div>
 
