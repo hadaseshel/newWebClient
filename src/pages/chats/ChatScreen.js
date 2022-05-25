@@ -89,8 +89,8 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
     const [errortServerGet,SetErrortServerGet]= useState("")
 
     // using signalR for recieving new message.
-    var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
-    startSignalR({con: connection, currentUser: usernameinlogin})
+    //var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
+    //startSignalR({con: connection, currentUser: usernameinlogin})
 
     // in order to scroll down automaticly
     const messagesEndRef = useRef(null)
@@ -136,9 +136,9 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
             .then(handleErrors)
             .then(async function(){
                 // send signalR to the reciever
-                connection.invoke("SendMessage", username, JSON.stringify({from: usernameinlogin, to: username ,content:msg})
-                ).catch(function (err) {
-                    return console.error(err.toString());})
+               // connection.invoke("SendMessage", username, JSON.stringify({from: usernameinlogin, to: username ,content:msg})
+               // ).catch(function (err) {
+               //     return console.error(err.toString());})
                 var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
                 const response = await fetch(path);
                 const data =  await response.json();
@@ -188,7 +188,7 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
                 {(errortServerGet!="")?(<ErrorMyServerNotAilabilityByGet/>):""}
                 <MessagesList messages={messageList}/>
                 {// get a message if another user send it to me. 
-                    connection.on("ReceiveMessage", async function (message) {
+                    /*connection.on("ReceiveMessage", async function (message) {
                         console.log(message);
                         var dataMsg = JSON.parse(message);
                         var sender = dataMsg["from"];
@@ -210,7 +210,7 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
                             //updateLastM(data);
                             document.getElementById('messageid').value = '';
                         }
-                })}
+                })*/}
                 <div ref={messagesEndRef} />
             </div>
 
