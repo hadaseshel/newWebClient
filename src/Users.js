@@ -30,7 +30,7 @@ const ortalFriends = [{username:'hadaseshel', nickname: 'doosa', image: "hadasfo
 const sivanFriends = [{username:'hadaseshel', nickname: 'doosa', image: "hadasfoto.png", chat:SivanChatWithHadas}];
 
 const ofirFriends = [];
-
+/*
 // the dictionery of user
 const Users = {'hadaseshel': {username:'hadaseshel', password: '123456Ha', nickname: 'doosa', image: "hadasfoto.png", friends: hadaseshelFriends},
 'hailzanbar': {username: 'hailzanbar',password: '123456Ha', nickname: 'hailosh', image: "hailfoto.jpeg", friends: hailzanbarFriends},
@@ -39,6 +39,7 @@ const Users = {'hadaseshel': {username:'hadaseshel', password: '123456Ha', nickn
 'ortal': {username:'ortal', password: '123456Ha', nickname: 'ortalosh', image: "ortalfoto.jpg", friends: ortalFriends},
 'sivan': {username:'sivan', password: '123456Ha', nickname: 'sivanosh', image: "sivanfoto.jpg", friends: sivanFriends},
 'ofir': {username:'ofir', password: '123456Ha', nickname: 'ofirosh', image: "ofirfoto.jpg", friends: ofirFriends}
-};
+};*/
+const Users={};
 
 export default Users;

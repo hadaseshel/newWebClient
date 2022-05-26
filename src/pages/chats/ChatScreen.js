@@ -6,6 +6,7 @@ import UploadImage from "./upload/UploadImage";
 import UploadVideo from "./upload/UploadVideo";
 import UploadAudio from "./upload/UploadAudio";
 import * as signalR from "@microsoft/signalr";
+import Users from "../../Users";
 
 // alert if There was a problem with the contact's server
 function ErrorContactsServerNotAilability(){
@@ -139,15 +140,16 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
                 _connection.invoke("SendMessage", username, JSON.stringify({from: usernameinlogin, to: username ,content:msg})
                 ).catch(function (err) {
                     return console.error(err.toString());})
-                var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
+                var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/'+ id +'/?user=' + usernameinlogin;
                 const response = await fetch(path);
                 const data =  await response.json();
                 if(!response.ok){
                     SetErrortServerGet("error")
                 }else{
-                    updateLastM(data);
+                    messageList.push(data);
+                    updateLastM(messageList);
                     const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
-                                                        messageList={data} server={server} createScreen={createScreen} updateLastM={updateLastM}/>;
+                                                        messageList={messageList} server={server} createScreen={createScreen} updateLastM={updateLastM} connection={connection}/>;
                     createScreen(newChatScreen);
                     document.getElementById('messageid').value = '';  
                 }
@@ -188,27 +190,26 @@ function ChatScreen({usernameinlogin, username, nickname, image, messageList, se
                 {(errortServerGet!="")?(<ErrorMyServerNotAilabilityByGet/>):""}
                 <MessagesList messages={messageList}/>
                 {// get a message if another user send it to me. 
-                    _connection.on("ReceiveMessage", async function (message) {
+                   _connection.on("ReceiveMessage", async function (message) {
                         //console.log(message);
                         var dataMsg = JSON.parse(message);
                         var sender = dataMsg["from"];
                         //console.log(sender);
                         if (sender == username) {
-                            var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/?user=' + usernameinlogin;
+                            var lastMessageid = messageList[messageList.length-1].id;
+                            var path = 'http://localhost:5034/api/contacts/'+ username + '/messages/'+ (lastMessageid+1) +'/?user=' + usernameinlogin;
                             const response = await fetch(path);
-                            const data = await response.json();
-                            //console.log(data);
-                            updateLastM(data);
+                            const data =  await response.json();
+                            messageList.push(data);
+                            updateLastM(messageList);
                             const newChatScreen = <ChatScreen usernameinlogin={usernameinlogin} username={username} nickname={nickname} image={image}
-                                           messageList={data} server = {server} createScreen={createScreen} updateLastM={updateLastM}/>;
+                                           messageList={messageList} server = {server} createScreen={createScreen} updateLastM={updateLastM}/>;
                             createScreen(newChatScreen);
-                            document.getElementById('messageid').value = '';
                         } else {
                             var path = 'http://localhost:5034/api/contacts/'+ sender + '/messages/?user=' + usernameinlogin;
                             const response = await fetch(path);
                             const data = await response.json();
-                            //updateLastM(data);
-                            document.getElementById('messageid').value = '';
+                            Users[usernameinlogin][sender]("render");
                         }
                 })}
                 <div ref={messagesEndRef} />

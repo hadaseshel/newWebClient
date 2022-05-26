@@ -4,6 +4,7 @@ import Avatar from "./icons/Avatar";
 import NewChat from "./NewChat";
 import ChatListUpdate from "./ChatListUpdate";
 import * as signalR from "@microsoft/signalr";
+import Users from "../../Users";
 
 function handleErrors(response) {
     if (!response.ok) {
@@ -18,18 +19,22 @@ function ErrorGetContacts(){
     );
 }
 
-/*
 
 async function startSignalR({con, currentUser}) {
     // using signalR for recieving new message.
     await con.start();
     con.invoke("CreateConID", currentUser).catch(function (err) {
         return console.error(err.toString());})
-}*/
+}
 
 function SideBar({user, createScreen}) {
     const [errorGetContacts, setErrorGetContacts] = useState("")
     const [chatList, setChatList] = useState([])
+    Users[user.username]={};
+    var connection;
+    //var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
+    //startSignalR({con: connection, currentUser: user.username})
+
     function getContacts() {
         fetch('http://localhost:5034/api/contacts/?user='+ user.username)
         .then(handleErrors)
@@ -44,23 +49,12 @@ function SideBar({user, createScreen}) {
             }
         );
     }
-    getContacts();
+    //new
+    if(chatList.length == 0){
+        getContacts(); 
+    }
+    //getContacts();
 
-    // using signalR for recieving new message.
-    //var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
-
-    /*
-    useEffect( () => {
-        async function startSignalR(){
-                    // using signalR for recieving new message.
-                    await connection.start();
-                    connection.invoke("CreateConID", user.username).catch(function (err) {
-                        return console.error(err.toString());})
-
-        }
-        startSignalR();
-    }, []);*/
-    var connection;
 
     // update the chats list with the new contact
     const addChat = function(newContact) {
@@ -81,6 +75,29 @@ function SideBar({user, createScreen}) {
                 body: JSON.stringify({from: user.username, to: newContact.id ,server: user.server})
             })
             .then(handleErrors)
+            // new her
+            .then(function(){
+                fetch('http://localhost:5034/api/contacts/'+ newContact.id +'/?user='+ user.username)
+                .then(handleErrors)
+                .then(response => response.json())
+                .then(data=>{
+                    var newchatlist = [...chatList]
+                    newchatlist.push(data);
+                    setChatList(newchatlist);
+                    // send signalR to the reciever
+                    /*connection.invoke("SendMessage", newContact.id, JSON.stringify({from: user.username, to: newContact.id ,server: user.server})
+                    ).catch(function (err) {
+                        return console.error(err.toString());})*/
+                })
+                .then(response => setErrorGetContacts(""))
+                .catch(
+                    function(error){
+                        if(error.message === '400' || error.message === '404'){
+                            setErrorGetContacts("ERROR");
+                        }
+                    }
+                );
+            })
             .catch(
                 function(error){
                     if(error.message === '404'){
@@ -101,6 +118,18 @@ function SideBar({user, createScreen}) {
         );
     }
 
+    // creat connection on
+    /*connection.on("ReceiveMessage", async function (message) {
+        //console.log(message);
+        var dataMsg = JSON.parse(message);
+        var sender = dataMsg["from"];
+        const response = fetch('http://' + user.server +'/api/contacts/'+ sender +'/?user='+ user.username);
+        const data =  await response.json();
+        var newChatList = [...chatList];
+        newChatList.push(data);
+        setChatList(newChatList);
+        //getContacts();
+    })*/
 
     return (
         <div className="sidebar">
