@@ -29,17 +29,16 @@ async function startSignalR({con, currentUser}) {
 
 function SideBar({user, createScreen}) {
     const [errorGetContacts, setErrorGetContacts] = useState("")
-    const [chatList, setChatList] = useState([])
+    const [chatList, setChatList] = useState([]);
     Users[user.username]={};
     var connection;
-    //var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/chatHub").build();
-    //startSignalR({con: connection, currentUser: user.username})
-
-    function getContacts() {
+    var connectionInvit = new signalR.HubConnectionBuilder().withUrl("http://localhost:5034/invitationsHub").build();
+    startSignalR({con: connectionInvit, currentUser: user.username})
+    useEffect(() => {
         fetch('http://localhost:5034/api/contacts/?user='+ user.username)
         .then(handleErrors)
         .then(response => response.json())
-        .then(data => setChatList(data))
+        .then(data =>setChatList(data))
         .then(response => setErrorGetContacts(""))
         .catch(
             function(error){
@@ -48,12 +47,7 @@ function SideBar({user, createScreen}) {
                 }
             }
         );
-    }
-    //new
-    if(chatList.length == 0){
-        getContacts(); 
-    }
-    //getContacts();
+      },[])
 
 
     // update the chats list with the new contact
@@ -85,9 +79,9 @@ function SideBar({user, createScreen}) {
                     newchatlist.push(data);
                     setChatList(newchatlist);
                     // send signalR to the reciever
-                    /*connection.invoke("SendMessage", newContact.id, JSON.stringify({from: user.username, to: newContact.id ,server: user.server})
-                    ).catch(function (err) {
-                        return console.error(err.toString());})*/
+                    connectionInvit.invoke("SendInvitation", newContact.id, JSON.stringify({from: user.username, to: newContact.id}))
+                    .catch(function (err) {
+                        return console.error(err.toString());})
                 })
                 .then(response => setErrorGetContacts(""))
                 .catch(
@@ -117,19 +111,24 @@ function SideBar({user, createScreen}) {
             }
         );
     }
-
-    // creat connection on
-    /*connection.on("ReceiveMessage", async function (message) {
-        //console.log(message);
+    connectionInvit.on("ReceiveInvitation", async function(message){
         var dataMsg = JSON.parse(message);
         var sender = dataMsg["from"];
-        const response = fetch('http://' + user.server +'/api/contacts/'+ sender +'/?user='+ user.username);
-        const data =  await response.json();
-        var newChatList = [...chatList];
-        newChatList.push(data);
-        setChatList(newChatList);
-        //getContacts();
-    })*/
+        const response = fetch('http://' + user.server +'/api/contacts/'+ sender +'/?user='+ user.username)
+        .then(handleErrors)
+        .then(response => response.json())
+        .then(data=>{
+            var newchatlist = [...chatList]
+            newchatlist.push(data);
+            setChatList(newchatlist);})
+        .catch(
+            function(error){
+                if(error.message === '400' || error.message === '404'){
+                    setErrorGetContacts("ERROR");
+                }
+            }
+        );
+    })
 
     return (
         <div className="sidebar">
